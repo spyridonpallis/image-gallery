@@ -1,13 +1,10 @@
-require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
-
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Configure AWS
+// AWS S3 configuration
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -28,11 +25,8 @@ const upload = multer({
   })
 });
 
-// Serve static files
-app.use(express.static('.'));
-
-// Handle file upload
-app.post('/upload', upload.single('image'), (req, res) => {
+// File upload route
+app.post('/api/upload', upload.single('image'), (req, res) => {
   if (req.file) {
     res.json({ imageUrl: req.file.location });
   } else {
@@ -40,6 +34,8 @@ app.post('/upload', upload.single('image'), (req, res) => {
   }
 });
 
+// Start the server
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
