@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piotr Kluk Photography</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>Piotr Kluk Photography</h1>
+        <nav>
+            <ul>
+                <li><a href="#" id="about-link">About</a></li>
+                <li><button id="theme-toggle"><i class="fas fa-moon"></i></button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="gallery" role="main"></main>
+
+    <div id="modal" class="modal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modal-image" src="" alt="">
+            <div id="modal-info">
+                <h2 id="modal-title"></h2>
+                <p id="modal-date"></p>
+                <p id="modal-location"></p>
+                <p id="modal-description"></p>
+                <p id="modal-photographer"></p>
+            </div>
+            <button id="fullscreen-btn" class="fullscreen-btn">View Full Screen</button>
+        </div>
+    </div>
+
+    <div id="about-modal" class="modal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>About the Photographer</h2>
+            <p id="about-text"></p>
+        </div>
+    </div>
+
+    <footer>
+        © 2024 Piotr Kluk Photography
+        <a href="admin.html" class="admin-button">Admin</a>
+    </footer>
+
+    <script src="/js/script.js" defer></script>
+</body>
+</html>

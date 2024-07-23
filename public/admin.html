@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Piotr Kluk Photography</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+    <div id="admin-panel">
+        <h1>Admin Panel</h1>
+        
+        <div id="login-form">
+            <h2>Login</h2>
+            <input type="password" id="admin-password" placeholder="Enter password">
+            <button id="login-button">Login</button>
+        </div>
+
+        <div id="admin-controls" style="display: none;">
+            <h2>Manage Photos</h2>
+            
+            <div id="add-photo">
+                <h3>Add New Photo</h3>
+                <input type="file" id="new-photo-file" accept="image/*">
+                <input type="text" id="new-photo-title" placeholder="Title">
+                <input type="date" id="new-photo-date">
+                <input type="text" id="new-photo-location" placeholder="Location">
+                <textarea id="new-photo-description" placeholder="Description"></textarea>
+                <button id="add-photo-button">Add Photo</button>
+            </div>
+
+            <div id="photo-list">
+                <h3>Current Photos</h3>
+                <ul id="sortable-photo-list"></ul>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">Back to Gallery</a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script src="/js/admin.js" defer></script>
+</body>
+</html>
