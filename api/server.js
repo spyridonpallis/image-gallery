@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { S3Client, PutObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
@@ -129,6 +129,28 @@ app.get('/api/images', async (req, res) => {
   } catch (error) {
     console.error('Error listing images:', error);
     res.status(500).json({ error: 'Error listing images' });
+  }
+});
+
+// Delete image route
+app.delete('/api/images', isAuthenticated, async (req, res) => {
+  const { key } = req.body;
+
+  if (!key) {
+    return res.status(400).json({ error: 'Key is required' });
+  }
+
+  const deleteParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: key,
+  };
+
+  try {
+    await s3Client.send(new DeleteObjectCommand(deleteParams));
+    res.status(200).json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ error: 'Error deleting image' });
   }
 });
 

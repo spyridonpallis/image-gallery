@@ -109,7 +109,8 @@ addPhotoButton.addEventListener('click', async () => {
       console.log('Upload response data:', data); // Debug statement
 
       const newImage = {
-        src: data.imageUrl
+        src: data.imageUrl,
+        key: data.imageUrl.split('/').pop()
       };
 
       images.unshift(newImage);
@@ -126,15 +127,35 @@ addPhotoButton.addEventListener('click', async () => {
   }
 });
 
-photoList.addEventListener('click', (e) => {
+photoList.addEventListener('click', async (e) => {
   if (e.target.classList.contains('remove-photo')) {
     const index = e.target.dataset.index;
     const confirmRemove = confirm('Are you sure you want to remove this photo?');
     if (confirmRemove) {
-      images.splice(index, 1);
-      saveImages();
-      updatePhotoList();
-      showMessage('Photo removed successfully!');
+      const imageToRemove = images[index];
+      try {
+        const response = await fetch(`${apiUrl}/images`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ key: imageToRemove.key }),
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+        }
+
+        images.splice(index, 1);
+        saveImages();
+        updatePhotoList();
+        showMessage('Photo removed successfully!');
+      } catch (error) {
+        console.error('Error during fetch:', error);
+        showMessage(`Error removing photo: ${error.message}`, true);
+      }
     }
   }
 });
