@@ -3,32 +3,9 @@ const cors = require('cors');
 const multer = require('multer');
 const { S3Client, PutObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const cookieParser = require('cookie-parser');
-const fs = require('fs').promises;
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
-
-// Path to the JSON file storing image metadata
-const IMAGES_FILE_PATH = path.join(__dirname, 'images.json');
-
-// Load image data from JSON file
-const loadImageData = async () => {
-  try {
-    const data = await fs.readFile(IMAGES_FILE_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      return []; // Return an empty array if the file doesn't exist
-    }
-    throw error;
-  }
-};
-
-// Save image data to JSON file
-const saveImageData = async (data) => {
-  await fs.writeFile(IMAGES_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
-};
 
 // Update CORS configuration
 const allowedOrigins = [
@@ -129,24 +106,6 @@ app.post('/api/upload', isAuthenticated, upload.single('image'), async (req, res
 
     await s3Client.send(new PutObjectCommand(uploadParams));
     const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-
-    // Get existing images data
-    const images = await loadImageData();
-
-    // Add new image details
-    const newImage = {
-      src: imageUrl,
-      title: req.body.title,
-      date: req.body.date,
-      location: req.body.location,
-      description: req.body.description,
-      photographer: 'Piotr Kluk'
-    };
-    images.unshift(newImage);
-
-    // Save updated images data
-    await saveImageData(images);
-
     res.status(200).json({ imageUrl });
   } catch (error) {
     console.error('Error uploading to S3:', error);
@@ -157,7 +116,15 @@ app.post('/api/upload', isAuthenticated, upload.single('image'), async (req, res
 // List images route
 app.get('/api/images', async (req, res) => {
   try {
-    const images = await loadImageData();
+    const listObjectsCommand = {
+      Bucket: process.env.S3_BUCKET_NAME
+    };
+
+    const data = await s3Client.send(new ListObjectsV2Command(listObjectsCommand));
+    const images = data.Contents.map(item => {
+      return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${item.Key}`;
+    });
+
     res.status(200).json({ images });
   } catch (error) {
     console.error('Error listing images:', error);
