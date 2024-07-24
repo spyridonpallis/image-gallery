@@ -1,5 +1,5 @@
 const adminPassword = 'your_secure_password_here'; // Change this to a secure password
-const apiUrl = 'https://image-gallery-nn0b8zkp4-spyridons-projects.vercel.app/api/upload';
+const apiUrl = 'https://image-gallery-nn0b8zkp4-spyridons-projects.vercel.app';
 
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');

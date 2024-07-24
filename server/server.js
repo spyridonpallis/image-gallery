@@ -1,8 +1,11 @@
 const express = require('express');
+const cors = require('cors');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const app = express();
+
+app.use(cors());
 
 // AWS S3 configuration
 AWS.config.update({
