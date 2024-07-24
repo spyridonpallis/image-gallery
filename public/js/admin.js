@@ -76,6 +76,7 @@ loginButton.addEventListener('click', async (e) => {
         }
 
         const data = await response.json();
+        console.log('Login response data:', data); // Debug statement
 
         if (data.success) {
             loginForm.style.display = 'none';
@@ -110,6 +111,8 @@ addPhotoButton.addEventListener('click', async () => {
             }
 
             const data = await response.json();
+            console.log('Upload response data:', data); // Debug statement
+
             const newImage = {
                 src: data.imageUrl,
                 title: document.getElementById('new-photo-title').value,

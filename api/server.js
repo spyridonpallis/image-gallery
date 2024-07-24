@@ -30,9 +30,12 @@ const upload = multer({
 // Middleware to check authentication
 const isAuthenticated = (req, res, next) => {
     const token = req.cookies.adminToken;
+    console.log('Request Cookies:', req.cookies); // Debug statement to log all cookies
+    console.log('Admin Token:', token); // Debug statement
     if (token === process.env.ADMIN_PASSWORD) {
         next();
     } else {
+        console.log('Unauthorized access'); // Debug statement
         res.status(401).json({ error: 'Unauthorized' });
     }
 };
@@ -57,8 +60,10 @@ app.post('/api/login', (req, res) => {
             sameSite: 'Strict',
             maxAge: 3600000 // 1 hour
         });
+        console.log('Login successful, cookie set:', process.env.ADMIN_PASSWORD); // Debug statement
         return res.status(200).json({ success: true, message: 'Login successful' });
     } else {
+        console.log('Incorrect password'); // Debug statement
         return res.status(401).json({ success: false, error: 'Incorrect password' });
     }
 });
