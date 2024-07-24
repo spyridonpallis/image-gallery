@@ -40,9 +40,8 @@ header {
     background-color: var(--primary-color);
     padding: 1rem 2rem;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    position: fixed;
+    position: sticky;
     top: 0;
-    width: 100%;
     z-index: 1000;
     display: flex;
     justify-content: space-between;
@@ -65,7 +64,7 @@ nav ul li {
 
 nav ul li a, #theme-toggle {
     text-decoration: none;
-    color: var (--background-color);
+    color: var(--background-color);
     font-weight: 500;
     transition: var(--transition);
     background: none;
