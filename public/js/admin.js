@@ -10,7 +10,27 @@ const photoList = document.getElementById('sortable-photo-list');
 const newPhotoFile = document.getElementById('new-photo-file');
 
 // Stored images
-let images = JSON.parse(localStorage.getItem('images')) || [];
+let images = [];
+
+// Fetch images from server
+const fetchImages = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/images`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    images = data.images;
+    updatePhotoList();
+  } catch (error) {
+    console.error('Error fetching images:', error);
+  }
+};
 
 // Functions
 const updatePhotoList = () => {
@@ -33,7 +53,7 @@ const updatePhotoList = () => {
         return images[index];
       });
       images = newOrder;
-      saveImages();
+      saveImagesOrder();
     }
   });
 };
@@ -46,8 +66,26 @@ const showMessage = (message, isError = false) => {
   setTimeout(() => messageElement.remove(), 5000);
 };
 
-const saveImages = () => {
-  localStorage.setItem('images', JSON.stringify(images));
+const saveImagesOrder = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/images`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ images }),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Images order saved:', data);
+  } catch (error) {
+    console.error('Error saving images order:', error);
+  }
 };
 
 const resetForm = () => {
@@ -81,7 +119,7 @@ loginButton.addEventListener('click', async (e) => {
     if (data.success) {
       loginForm.style.display = 'none';
       adminControls.style.display = 'block';
-      updatePhotoList();
+      fetchImages();
       showMessage('Login successful!');
     } else {
       showMessage('Incorrect password. Please try again.', true);
@@ -97,6 +135,10 @@ addPhotoButton.addEventListener('click', async () => {
   if (file) {
     const formData = new FormData();
     formData.append('image', file);
+    formData.append('title', document.getElementById('new-photo-title').value);
+    formData.append('date', document.getElementById('new-photo-date').value);
+    formData.append('location', document.getElementById('new-photo-location').value);
+    formData.append('description', document.getElementById('new-photo-description').value);
 
     try {
       const response = await fetch(`${apiUrl}/upload`, {
@@ -124,7 +166,7 @@ addPhotoButton.addEventListener('click', async () => {
 
       if (newImage.title && newImage.date && newImage.location && newImage.description) {
         images.unshift(newImage);
-        saveImages();
+        saveImagesOrder();
         updatePhotoList();
         showMessage('Photo added successfully!');
         resetForm();
@@ -146,7 +188,7 @@ photoList.addEventListener('click', (e) => {
     const confirmRemove = confirm('Are you sure you want to remove this photo?');
     if (confirmRemove) {
       images.splice(index, 1);
-      saveImages();
+      saveImagesOrder();
       updatePhotoList();
       showMessage('Photo removed successfully!');
     }
@@ -166,7 +208,7 @@ const checkLoginStatus = async () => {
       console.log('Check login status response:', data); // Debug statement
 
       adminControls.style.display = 'block';
-      updatePhotoList();
+      fetchImages();
     } else {
       console.log('User is not logged in'); // Debug statement
       window.location.href = '/login.html'; // Redirect to login page
@@ -179,4 +221,3 @@ const checkLoginStatus = async () => {
 
 // Call this when the page loads
 checkLoginStatus();
-updatePhotoList();
