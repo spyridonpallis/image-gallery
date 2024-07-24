@@ -1,4 +1,5 @@
-const apiUrl = process.env.API_URL;
+const apiUrl = 'https://image-gallery-nu-opal.vercel.app/';
+
 
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');
