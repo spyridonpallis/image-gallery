@@ -18,8 +18,7 @@ const updatePhotoList = () => {
   images.forEach((image, index) => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <img src="${image.src}" alt="${image.title}" style="width: 50px; height: 50px; object-fit: cover;">
-      <span>${image.title}</span>
+      <img src="${image.src}" alt="Photo ${index + 1}" style="width: 50px; height: 50px; object-fit: cover;">
       <button class="remove-photo" data-index="${index}">Remove</button>
     `;
     photoList.appendChild(li);
@@ -52,10 +51,6 @@ const saveImages = () => {
 
 const resetForm = () => {
   newPhotoFile.value = '';
-  document.getElementById('new-photo-title').value = '';
-  document.getElementById('new-photo-date').value = '';
-  document.getElementById('new-photo-location').value = '';
-  document.getElementById('new-photo-description').value = '';
 };
 
 // Event Listeners
@@ -114,23 +109,14 @@ addPhotoButton.addEventListener('click', async () => {
       console.log('Upload response data:', data); // Debug statement
 
       const newImage = {
-        src: data.imageUrl,
-        title: document.getElementById('new-photo-title').value,
-        date: document.getElementById('new-photo-date').value,
-        location: document.getElementById('new-photo-location').value,
-        description: document.getElementById('new-photo-description').value,
-        photographer: 'Piotr Kluk'
+        src: data.imageUrl
       };
 
-      if (newImage.title && newImage.date && newImage.location && newImage.description) {
-        images.unshift(newImage);
-        saveImages();
-        updatePhotoList();
-        showMessage('Photo added successfully!');
-        resetForm();
-      } else {
-        showMessage('Please fill in all fields.', true);
-      }
+      images.unshift(newImage);
+      saveImages();
+      updatePhotoList();
+      showMessage('Photo added successfully!');
+      resetForm();
     } catch (error) {
       console.error('Error during fetch:', error);
       showMessage(`Error uploading photo: ${error.message}`, true);
