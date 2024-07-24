@@ -57,9 +57,9 @@ const isAuthenticated = (req, res, next) => {
   }
 };
 
-// Test route
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'API is working' });
+// Test route to check authentication
+app.get('/api/test', isAuthenticated, (req, res) => {
+  res.status(200).json({ success: true });
 });
 
 // Login route

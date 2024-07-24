@@ -151,18 +151,24 @@ const checkLoginStatus = async () => {
       const data = await response.json();
       console.log('Check login status response:', data); // Debug statement
 
-      adminControls.style.display = 'block';
-      updatePhotoList();
+      if (data.success) {
+        loginForm.style.display = 'none';
+        adminControls.style.display = 'block';
+        updatePhotoList();
+      } else {
+        loginForm.style.display = 'block';
+        adminControls.style.display = 'none';
+      }
     } else {
-      console.log('User is not logged in'); // Debug statement
-      window.location.href = '/login.html'; // Redirect to login page
+      loginForm.style.display = 'block';
+      adminControls.style.display = 'none';
     }
   } catch (error) {
     console.error('Error checking login status:', error);
-    window.location.href = '/login.html'; // Redirect to login page
+    loginForm.style.display = 'block';
+    adminControls.style.display = 'none';
   }
 };
 
 // Call this when the page loads
 checkLoginStatus();
-updatePhotoList();
