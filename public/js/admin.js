@@ -10,18 +10,20 @@ const photoList = document.getElementById('sortable-photo-list');
 const newPhotoFile = document.getElementById('new-photo-file');
 
 // Stored images
-let images = JSON.parse(localStorage.getItem('images')) || [];
+let images = [];
 
 // Functions
 const updatePhotoList = () => {
   photoList.innerHTML = '';
   images.forEach((image, index) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <img src="${image.src}" alt="Photo ${index + 1}" style="width: 50px; height: 50px; object-fit: cover;">
-      <button class="remove-photo" data-index="${index}">Remove</button>
-    `;
-    photoList.appendChild(li);
+    if (image) {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <img src="${image.url}" alt="Photo ${index + 1}" style="width: 50px; height: 50px; object-fit: cover;">
+        <button class="remove-photo" data-index="${index}">Remove</button>
+      `;
+      photoList.appendChild(li);
+    }
   });
 
   new Sortable(photoList, {
@@ -76,7 +78,7 @@ loginButton.addEventListener('click', async (e) => {
     if (data.success) {
       loginForm.style.display = 'none';
       adminControls.style.display = 'block';
-      updatePhotoList();
+      await fetchImages();
       showMessage('Login successful!');
     } else {
       showMessage('Incorrect password. Please try again.', true);
@@ -109,7 +111,7 @@ addPhotoButton.addEventListener('click', async () => {
       console.log('Upload response data:', data); // Debug statement
 
       const newImage = {
-        src: data.imageUrl,
+        url: data.imageUrl,
         key: data.imageUrl.split('/').pop()
       };
 
@@ -160,6 +162,27 @@ photoList.addEventListener('click', async (e) => {
   }
 });
 
+// Fetch images from the server
+const fetchImages = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/images`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    images = data.images;
+    saveImages();
+    updatePhotoList();
+  } catch (error) {
+    console.error('Error fetching images:', error);
+  }
+};
+
 // Check if user is already logged in
 const checkLoginStatus = async () => {
   try {
@@ -175,7 +198,7 @@ const checkLoginStatus = async () => {
       if (data.success) {
         loginForm.style.display = 'none';
         adminControls.style.display = 'block';
-        updatePhotoList();
+        await fetchImages();
       } else {
         loginForm.style.display = 'block';
         adminControls.style.display = 'none';

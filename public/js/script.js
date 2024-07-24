@@ -49,12 +49,12 @@ const loadImages = (page = 1) => {
     const end = start + imagesPerPage;
     const imagesToLoad = images.slice(start, end);
 
-    imagesToLoad.forEach((src, index) => {
+    imagesToLoad.forEach((image, index) => {
         const item = document.createElement('div');
         item.classList.add('gallery-item');
         
         const img = document.createElement('img');
-        img.src = src;
+        img.src = image.url;
         img.alt = `Image ${start + index + 1}`;
         img.loading = 'lazy';
         
@@ -68,8 +68,8 @@ const loadImages = (page = 1) => {
 };
 
 const openModal = (index) => {
-    const src = images[index];
-    modalImage.src = src;
+    const image = images[index];
+    modalImage.src = image.url;
     modalImage.alt = `Image ${index + 1}`;
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('show'), 10);

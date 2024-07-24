@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
@@ -121,9 +121,17 @@ app.get('/api/images', async (req, res) => {
     };
 
     const data = await s3Client.send(new ListObjectsV2Command(listObjectsCommand));
-    const images = data.Contents.map(item => {
-      return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${item.Key}`;
+    const imagePromises = data.Contents.map(async item => {
+      try {
+        await s3Client.send(new HeadObjectCommand({ Bucket: process.env.S3_BUCKET_NAME, Key: item.Key }));
+        return { url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${item.Key}`, key: item.Key };
+      } catch (error) {
+        console.error('Error fetching head object:', error);
+        return null;
+      }
     });
+
+    const images = (await Promise.all(imagePromises)).filter(image => image !== null);
 
     res.status(200).json({ images });
   } catch (error) {
