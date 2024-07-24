@@ -65,7 +65,7 @@ nav ul li {
 
 nav ul li a, #theme-toggle {
     text-decoration: none;
-    color: var(--background-color);
+    color: var (--background-color);
     font-weight: 500;
     transition: var(--transition);
     background: none;
@@ -79,11 +79,12 @@ nav ul li a:hover, #theme-toggle:hover {
 }
 
 main {
-    padding: 2rem;
+    padding: 2rem 1rem;
     max-width: 1200px;
     margin: 0 auto;
     flex: 1;
     margin-top: 70px; /* Adjust based on header height */
+    margin-bottom: 70px; /* Ensure margin for footer */
     overflow-y: auto;
 }
 
@@ -260,7 +261,7 @@ footer {
     width: 100%;
     padding: 0.5rem;
     margin-bottom: 1rem;
-    border: 1px solid var (--secondary-color);
+    border: 1px solid var(--secondary-color);
     border-radius: 4px;
     background-color: var(--background-color);
     color: var(--text-color);
