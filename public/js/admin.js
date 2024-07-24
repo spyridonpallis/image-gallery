@@ -1,5 +1,4 @@
 const apiUrl = '/api';
-const adminPassword = process.env.ADMIN_PASSWORD || 'your_secure_password_here'; // Change this to a secure password
 
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');
@@ -48,14 +47,29 @@ const saveImages = () => {
     localStorage.setItem('images', JSON.stringify(images));
 };
 
-loginButton.addEventListener('click', () => {
-    if (passwordInput.value === adminPassword) {
-        localStorage.setItem('adminToken', passwordInput.value);
-        loginForm.style.display = 'none';
-        adminControls.style.display = 'block';
-        updatePhotoList();
-    } else {
-        showMessage('Incorrect password. Please try again.', true);
+loginButton.addEventListener('click', async () => {
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password: passwordInput.value }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            localStorage.setItem('adminToken', passwordInput.value);
+            loginForm.style.display = 'none';
+            adminControls.style.display = 'block';
+            updatePhotoList();
+        } else {
+            showMessage('Incorrect password. Please try again.', true);
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showMessage('An error occurred during login. Please try again.', true);
     }
 });
 
@@ -66,7 +80,7 @@ addPhotoButton.addEventListener('click', async () => {
         formData.append('image', file);
 
         try {
-            const response = await fetch(`${apiUrl}/api/upload`, {
+            const response = await fetch(`${apiUrl}/upload`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
