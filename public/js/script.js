@@ -7,6 +7,7 @@ const modalLocation = document.getElementById('modal-location');
 const modalDescription = document.getElementById('modal-description');
 const modalPhotographer = document.getElementById('modal-photographer');
 const aboutLink = document.getElementById('about-link');
+const aboutModal = document.getElementById('about-modal'); // Reference to the about modal
 const aboutText = document.getElementById('about-text');
 const closeBtns = document.getElementsByClassName('close');
 const fullscreenBtn = document.getElementById('fullscreen-btn');
@@ -59,12 +60,12 @@ const loadImages = (page = 1) => {
         
         const img = document.createElement('img');
         img.src = src;
-        img.alt = `Image ${index + 1}`;
+        img.alt = `Image ${start + index + 1}`;
         img.loading = 'lazy';
         
         const title = document.createElement('div');
         title.classList.add('gallery-item-title');
-        title.textContent = `Image ${index + 1}`;
+        title.textContent = `Image ${start + index + 1}`;
         
         item.appendChild(img);
         item.appendChild(title);
@@ -91,8 +92,10 @@ const openModal = (index) => {
 
 const closeModal = () => {
     modal.classList.remove('show');
+    aboutModal.classList.remove('show'); // Close the about modal as well
     setTimeout(() => {
         modal.style.display = 'none';
+        aboutModal.style.display = 'none'; // Hide the about modal
     }, 300);
 };
 
@@ -108,7 +111,7 @@ aboutLink.addEventListener('click', (event) => {
 });
 
 window.onclick = (event) => {
-    if (event.target == modal) {
+    if (event.target == modal || event.target == aboutModal) {
         closeModal();
     }
 };
