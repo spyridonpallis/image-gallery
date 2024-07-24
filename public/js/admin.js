@@ -160,13 +160,23 @@ const checkLoginStatus = async () => {
             method: 'GET',
             credentials: 'include'
         });
+
         if (response.ok) {
+            const data = await response.json();
+            console.log('Check login status response:', data); // Debug statement
+
             loginForm.style.display = 'none';
             adminControls.style.display = 'block';
             updatePhotoList();
+        } else {
+            console.log('User is not logged in'); // Debug statement
+            loginForm.style.display = 'block';
+            adminControls.style.display = 'none';
         }
     } catch (error) {
         console.error('Error checking login status:', error);
+        loginForm.style.display = 'block';
+        adminControls.style.display = 'none';
     }
 };
 
