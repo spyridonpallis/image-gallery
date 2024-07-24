@@ -1,6 +1,6 @@
-// public/js/admin.js
-const apiUrl = 'https://image-gallery-nu-opal.vercel.app';
+const apiUrl = 'https://image-gallery-nu-opal.vercel.app/api';
 
+// Elements
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');
 const passwordInput = document.getElementById('admin-password');
@@ -9,8 +9,10 @@ const addPhotoButton = document.getElementById('add-photo-button');
 const photoList = document.getElementById('sortable-photo-list');
 const newPhotoFile = document.getElementById('new-photo-file');
 
+// Stored images
 let images = JSON.parse(localStorage.getItem('images')) || [];
 
+// Functions
 const updatePhotoList = () => {
     photoList.innerHTML = '';
     images.forEach((image, index) => {
@@ -48,10 +50,20 @@ const saveImages = () => {
     localStorage.setItem('images', JSON.stringify(images));
 };
 
+const resetForm = () => {
+    newPhotoFile.value = '';
+    document.getElementById('new-photo-title').value = '';
+    document.getElementById('new-photo-date').value = '';
+    document.getElementById('new-photo-location').value = '';
+    document.getElementById('new-photo-description').value = '';
+};
+
+// Event Listeners
 loginButton.addEventListener('click', async (e) => {
     e.preventDefault();
+    console.log(`API URL: ${apiUrl}/login`); // Log the URL to check it
     try {
-        const response = await fetch(`${apiUrl}/api/login`, {
+        const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -87,7 +99,7 @@ addPhotoButton.addEventListener('click', async () => {
         formData.append('image', file);
 
         try {
-            const response = await fetch(`${apiUrl}/api/upload`, {
+            const response = await fetch(`${apiUrl}/upload`, {
                 method: 'POST',
                 body: formData,
                 credentials: 'include'
@@ -139,17 +151,10 @@ photoList.addEventListener('click', (e) => {
     }
 });
 
-const resetForm = () => {
-    newPhotoFile.value = '';
-    document.getElementById('new-photo-title').value = '';
-    document.getElementById('new-photo-date').value = '';
-    document.getElementById('new-photo-location').value = '';
-    document.getElementById('new-photo-description').value = '';
-};
-
+// Check if user is already logged in
 const checkLoginStatus = async () => {
     try {
-        const response = await fetch(`${apiUrl}/api/checkAuth`, {
+        const response = await fetch(`${apiUrl}/checkAuth`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -163,5 +168,6 @@ const checkLoginStatus = async () => {
     }
 };
 
+// Call this when the page loads
 checkLoginStatus();
 updatePhotoList();

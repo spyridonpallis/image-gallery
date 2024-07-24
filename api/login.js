@@ -1,4 +1,3 @@
-// api/login.js
 import { parse } from 'cookie';
 
 export default function handler(req, res) {
@@ -34,15 +33,4 @@ export default function handler(req, res) {
         res.setHeader('Allow', ['POST']);
         return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-}
-
-// Helper function to parse cookies
-function parseCookies(req) {
-    return parse(req.headers.cookie || '');
-}
-
-// Middleware to check if user is authenticated
-export function isAuthenticated(req) {
-    const cookies = parseCookies(req);
-    return cookies.adminToken === process.env.ADMIN_PASSWORD;
 }
