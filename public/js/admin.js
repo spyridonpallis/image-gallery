@@ -1,4 +1,4 @@
-const apiUrl = 'https://image-gallery-4s5xrgxdi-spyridons-projects.vercel.app/api'; // Your Vercel deployment URL
+const apiUrl = process.env.API_URL;
 
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');
