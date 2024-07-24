@@ -1,4 +1,4 @@
-const apiUrl = 'https://image-gallery-nu-opal.vercel.app/';
+const apiUrl = 'https://image-gallery-nu-opal.vercel.app';
 
 
 const loginForm = document.getElementById('login-form');
