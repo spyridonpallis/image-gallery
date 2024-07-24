@@ -2,9 +2,13 @@
     "name": "image-gallery",
     "version": "1.0.0",
     "description": "Image gallery for Piotr Kluk Photography",
-    "main": "index.js",
+    "main": "api/server.js",
     "dependencies": {
-      "@aws-sdk/client-s3": "^3.x.x",
-      "multer": "^1.4.x"
+        "@aws-sdk/client-s3": "^3.x.x",
+        "cors": "^2.8.5",
+        "dotenv": "^16.0.0",
+        "express": "^4.17.1",
+        "multer": "^1.4.2",
+        "cookie-parser": "^1.4.5"
     }
 }

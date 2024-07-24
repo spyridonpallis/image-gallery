@@ -1,4 +1,4 @@
-const apiUrl = '/api'; // Update this to use relative path
+const apiUrl = 'https://image-gallery-nu-opal.vercel.app/api';
 
 // Elements
 const loginForm = document.getElementById('login-form');
@@ -58,17 +58,19 @@ const resetForm = () => {
     document.getElementById('new-photo-description').value = '';
 };
 
+// Event Listeners
 loginButton.addEventListener('click', async (e) => {
-  e.preventDefault();
-  try {
-      const response = await fetch(`${apiUrl}/login`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ password: passwordInput.value }),
-          credentials: 'include'
-      });
+    e.preventDefault();
+    console.log(`API URL: ${apiUrl}/login`); // Log the URL to check it
+    try {
+        const response = await fetch(`${apiUrl}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password: passwordInput.value }),
+            credentials: 'include'
+        });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -152,7 +154,7 @@ photoList.addEventListener('click', (e) => {
 // Check if user is already logged in
 const checkLoginStatus = async () => {
     try {
-        const response = await fetch(`${apiUrl}/checkAuth`, {
+        const response = await fetch(`${apiUrl}/test`, {
             method: 'GET',
             credentials: 'include'
         });

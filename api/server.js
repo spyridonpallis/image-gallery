@@ -2,11 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+app.use(cors({ credentials: true, origin: process.env.FRONTEND_URL }));
 app.use(express.json());
+app.use(cookieParser());
 
 // S3 client setup
 const s3Client = new S3Client({
@@ -25,8 +27,6 @@ const upload = multer({
     },
 });
 
-console.log('Server starting...');
-
 // Middleware to check authentication
 const isAuthenticated = (req, res, next) => {
     const token = req.cookies.adminToken;
@@ -37,15 +37,8 @@ const isAuthenticated = (req, res, next) => {
     }
 };
 
-// Test route
-app.get('/api/test', (req, res) => {
-    console.log('Test route hit');
-    res.json({ message: 'API is working' });
-});
-
 // Login route
 app.post('/api/login', (req, res) => {
-    console.log('Login route hit');
     const { password } = req.body;
 
     if (!password) {
@@ -67,7 +60,6 @@ app.post('/api/login', (req, res) => {
 
 // Upload route
 app.post('/api/upload', isAuthenticated, upload.single('image'), async (req, res) => {
-    console.log('Upload route hit');
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -92,6 +84,11 @@ app.post('/api/upload', isAuthenticated, upload.single('image'), async (req, res
     }
 });
 
+// Test route
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'API is working' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err);
@@ -103,7 +100,5 @@ if (require.main === module) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
-
-console.log('Routes set up. Ready to handle requests.');
 
 module.exports = app;
