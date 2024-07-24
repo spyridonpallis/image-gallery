@@ -1,62 +1,74 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
-const AWS = require('aws-sdk');
-const app = express();
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const dotenv = require('dotenv');
 
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+// CORS configuration
 app.use(cors({
-    origin: '*', // For testing. Replace with your specific origins in production.
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: process.env.FRONTEND_URL || 'https://image-gallery-5gorhlt79-spyridons-projects.vercel.app'
 }));
 
-// AWS S3 configuration
-AWS.config.update({
+app.use(express.json());
+
+// S3 client setup
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  }
 });
 
-const s3 = new AWS.S3();
-
-// Configure multer for S3 upload
+// Multer configuration for handling file uploads
 const upload = multer({
-    storage: multerS3({
-        s3: s3,
-        bucket: process.env.S3_BUCKET_NAME,
-        acl: 'public-read',
-        key: function (req, file, cb) {
-            cb(null, Date.now().toString() + '-' + file.originalname);
-        }
-    })
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // limit file size to 5MB
+  },
 });
 
-// Test route
-app.get('/api/upload', (req, res) => {
-    res.json({ message: "Upload endpoint is working. Please use POST to upload files." });
+// Authentication middleware
+const authenticate = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader === `Bearer ${process.env.ADMIN_PASSWORD}`) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
+// Upload endpoint
+app.post('/api/upload', authenticate, upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const file = req.file;
+  const fileName = `${Date.now()}-${file.originalname}`;
+
+  const uploadParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fileName,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  };
+
+  try {
+    await s3Client.send(new PutObjectCommand(uploadParams));
+    const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+    res.json({ imageUrl });
+  } catch (error) {
+    console.error('Error uploading to S3:', error);
+    res.status(500).json({ error: 'Error uploading image' });
+  }
 });
 
-// File upload route
-app.post('/api/upload', upload.single('image'), (req, res) => {
-    console.log('Received upload request');
-    if (req.file) {
-        console.log('File uploaded successfully:', req.file.location);
-        res.json({ imageUrl: req.file.location });
-    } else {
-        console.log('No file received');
-        res.status(400).json({ error: 'No file uploaded' });
-    }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('An error occurred:', err);
-    res.status(500).json({ error: 'Internal server error' });
-});
-
-// Start the server
-const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });

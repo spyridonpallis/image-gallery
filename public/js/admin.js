@@ -1,5 +1,5 @@
-const adminPassword = 'your_secure_password_here'; // Change this to a secure password
-const apiUrl = 'https://image-gallery-nn0b8zkp4-spyridons-projects.vercel.app';
+const apiUrl = process.env.API_URL || 'https://image-gallery-nn0b8zkp4-spyridons-projects.vercel.app';
+const adminPassword = process.env.ADMIN_PASSWORD || 'your_secure_password_here'; // Change this to a secure password
 
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');
@@ -50,6 +50,7 @@ const saveImages = () => {
 
 loginButton.addEventListener('click', () => {
     if (passwordInput.value === adminPassword) {
+        localStorage.setItem('adminToken', passwordInput.value);
         loginForm.style.display = 'none';
         adminControls.style.display = 'block';
         updatePhotoList();
@@ -67,37 +68,39 @@ addPhotoButton.addEventListener('click', async () => {
         try {
             const response = await fetch(`${apiUrl}/api/upload`, {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                },
                 body: formData
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                const newImage = {
-                    src: data.imageUrl,
-                    title: document.getElementById('new-photo-title').value,
-                    date: document.getElementById('new-photo-date').value,
-                    location: document.getElementById('new-photo-location').value,
-                    description: document.getElementById('new-photo-description').value,
-                    photographer: 'Piotr Kluk'
-                };
-
-                if (newImage.title && newImage.date && newImage.location && newImage.description) {
-                    images.unshift(newImage);
-                    saveImages();
-                    updatePhotoList();
-                    showMessage('Photo added successfully!');
-                    resetForm();
-                } else {
-                    showMessage('Please fill in all fields.', true);
-                }
-            } else {
+            if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Server responded with an error:', errorData);
-                showMessage(`Error uploading photo: ${errorData.error}`, true);
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+            }
+
+            const data = await response.json();
+            const newImage = {
+                src: data.imageUrl,
+                title: document.getElementById('new-photo-title').value,
+                date: document.getElementById('new-photo-date').value,
+                location: document.getElementById('new-photo-location').value,
+                description: document.getElementById('new-photo-description').value,
+                photographer: 'Piotr Kluk'
+            };
+
+            if (newImage.title && newImage.date && newImage.location && newImage.description) {
+                images.unshift(newImage);
+                saveImages();
+                updatePhotoList();
+                showMessage('Photo added successfully!');
+                resetForm();
+            } else {
+                showMessage('Please fill in all fields.', true);
             }
         } catch (error) {
             console.error('Error during fetch:', error);
-            showMessage('Network error. Please try again.', true);
+            showMessage(`Error uploading photo: ${error.message}`, true);
         }
     } else {
         showMessage('Please select an image file.', true);
