@@ -1,4 +1,4 @@
-const apiUrl = '/api';
+const apiUrl = 'https://image-gallery-4s5xrgxdi-spyridons-projects.vercel.app/api'; // Replace with your actual Vercel deployment URL
 
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');
@@ -48,38 +48,38 @@ const saveImages = () => {
 };
 
 loginButton.addEventListener('click', async () => {
-  try {
-      const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ password: passwordInput.value }),
-      });
+    try {
+        const response = await fetch(`${apiUrl}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password: passwordInput.value }),
+        });
 
-      if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Oops, we haven't got JSON!");
-      }
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Oops, we haven't got JSON!");
+        }
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (data.success) {
-          localStorage.setItem('adminToken', passwordInput.value);
-          loginForm.style.display = 'none';
-          adminControls.style.display = 'block';
-          updatePhotoList();
-      } else {
-          showMessage('Incorrect password. Please try again.', true);
-      }
-  } catch (error) {
-      console.error('Login error:', error);
-      showMessage(`An error occurred during login: ${error.message}. Please try again.`, true);
-  }
+        if (data.success) {
+            localStorage.setItem('adminToken', passwordInput.value);
+            loginForm.style.display = 'none';
+            adminControls.style.display = 'block';
+            updatePhotoList();
+        } else {
+            showMessage('Incorrect password. Please try again.', true);
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showMessage(`An error occurred during login: ${error.message}. Please try again.`, true);
+    }
 });
 
 addPhotoButton.addEventListener('click', async () => {
