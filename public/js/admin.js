@@ -61,7 +61,6 @@ const resetForm = () => {
 // Event Listeners
 loginButton.addEventListener('click', async (e) => {
     e.preventDefault();
-    console.log(`API URL: ${apiUrl}/login`); // Log the URL to check it
     try {
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',

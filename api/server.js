@@ -37,6 +37,11 @@ const isAuthenticated = (req, res, next) => {
     }
 };
 
+// Test route
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'API is working' });
+});
+
 // Login route
 app.post('/api/login', (req, res) => {
     const { password } = req.body;
@@ -82,11 +87,6 @@ app.post('/api/upload', isAuthenticated, upload.single('image'), async (req, res
         console.error('Error uploading to S3:', error);
         res.status(500).json({ error: 'Error uploading image' });
     }
-});
-
-// Test route
-app.get('/api/test', (req, res) => {
-    res.json({ message: 'API is working' });
 });
 
 // Error handling middleware
