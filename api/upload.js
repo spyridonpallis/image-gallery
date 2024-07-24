@@ -1,7 +1,6 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import multer from 'multer';
 import { promisify } from 'util';
-import { isAuthenticated } from './login';
 
 const s3Client = new S3Client({
     region: process.env.AWS_REGION,
@@ -39,9 +38,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-        if (!isAuthenticated(req)) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+        // Implement authentication check here
 
         try {
             await runMiddleware(req, res, upload.single('image'));
