@@ -23,11 +23,9 @@ const updatePhotoList = () => {
         photoList.appendChild(li);
     });
 
-    // Initialize drag-and-drop functionality
     new Sortable(photoList, {
         animation: 150,
         onEnd: () => {
-            // Update the order of images after drag-and-drop
             const newOrder = Array.from(photoList.children).map(li => {
                 const index = li.querySelector('.remove-photo').dataset.index;
                 return images[index];
@@ -63,45 +61,48 @@ loginButton.addEventListener('click', () => {
 addPhotoButton.addEventListener('click', async () => {
     const file = newPhotoFile.files[0];
     if (file) {
-      const formData = new FormData();
-      formData.append('image', file);
-  
-      try {
-        const response = await fetch(`${apiUrl}/api/upload`, {  // Note the /api/ here
-          method: 'POST',
-          body: formData
-        });
-  
-        if (response.ok) {
-          const data = await response.json();
-          const newImage = {
-            src: data.imageUrl,
-            title: document.getElementById('new-photo-title').value,
-            date: document.getElementById('new-photo-date').value,
-            location: document.getElementById('new-photo-location').value,
-            description: document.getElementById('new-photo-description').value,
-            photographer: 'Piotr Kluk'
-          };
-  
-          if (newImage.title && newImage.date && newImage.location && newImage.description) {
-            images.unshift(newImage);
-            saveImages();
-            updatePhotoList();
-            showMessage('Photo added successfully!');
-            resetForm();
-          } else {
-            showMessage('Please fill in all fields.', true);
-          }
-        } else {
-          showMessage('Error uploading photo. Please try again.', true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch(`${apiUrl}/api/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const newImage = {
+                    src: data.imageUrl,
+                    title: document.getElementById('new-photo-title').value,
+                    date: document.getElementById('new-photo-date').value,
+                    location: document.getElementById('new-photo-location').value,
+                    description: document.getElementById('new-photo-description').value,
+                    photographer: 'Piotr Kluk'
+                };
+
+                if (newImage.title && newImage.date && newImage.location && newImage.description) {
+                    images.unshift(newImage);
+                    saveImages();
+                    updatePhotoList();
+                    showMessage('Photo added successfully!');
+                    resetForm();
+                } else {
+                    showMessage('Please fill in all fields.', true);
+                }
+            } else {
+                const errorData = await response.json();
+                console.error('Server responded with an error:', errorData);
+                showMessage(`Error uploading photo: ${errorData.error}`, true);
+            }
+        } catch (error) {
+            console.error('Error during fetch:', error);
+            showMessage('Network error. Please try again.', true);
         }
-      } catch (error) {
-        showMessage('Error adding photo. Please try again.', true);
-      }
     } else {
-      showMessage('Please select an image file.', true);
+        showMessage('Please select an image file.', true);
     }
-  });
+});
 
 photoList.addEventListener('click', (e) => {
     if (e.target.classList.contains('remove-photo')) {
@@ -116,15 +117,6 @@ photoList.addEventListener('click', (e) => {
     }
 });
 
-const readFileAsDataURL = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = (e) => reject(e);
-        reader.readAsDataURL(file);
-    });
-};
-
 const resetForm = () => {
     newPhotoFile.value = '';
     document.getElementById('new-photo-title').value = '';
@@ -133,5 +125,4 @@ const resetForm = () => {
     document.getElementById('new-photo-description').value = '';
 };
 
-// Initialize the admin panel
 updatePhotoList();
