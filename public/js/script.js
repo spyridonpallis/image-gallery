@@ -1,13 +1,8 @@
 const gallery = document.getElementById('gallery');
 const modal = document.getElementById('modal');
 const modalImage = document.getElementById('modal-image');
-const modalTitle = document.getElementById('modal-title');
-const modalDate = document.getElementById('modal-date');
-const modalLocation = document.getElementById('modal-location');
-const modalDescription = document.getElementById('modal-description');
-const modalPhotographer = document.getElementById('modal-photographer');
 const aboutLink = document.getElementById('about-link');
-const aboutModal = document.getElementById('about-modal'); // Reference to the about modal
+const aboutModal = document.getElementById('about-modal');
 const aboutText = document.getElementById('about-text');
 const closeBtns = document.getElementsByClassName('close');
 const fullscreenBtn = document.getElementById('fullscreen-btn');
@@ -63,12 +58,7 @@ const loadImages = (page = 1) => {
         img.alt = `Image ${start + index + 1}`;
         img.loading = 'lazy';
         
-        const title = document.createElement('div');
-        title.classList.add('gallery-item-title');
-        title.textContent = `Image ${start + index + 1}`;
-        
         item.appendChild(img);
-        item.appendChild(title);
         item.addEventListener('click', () => openModal(start + index));
         gallery.appendChild(item);
     });
@@ -81,21 +71,16 @@ const openModal = (index) => {
     const src = images[index];
     modalImage.src = src;
     modalImage.alt = `Image ${index + 1}`;
-    modalTitle.textContent = `Image ${index + 1}`;
-    modalDate.textContent = `Date: Unknown`;
-    modalLocation.textContent = `Location: Unknown`;
-    modalDescription.textContent = `Description: Not available`;
-    modalPhotographer.textContent = `Photo by: Piotr Kluk`;
     modal.style.display = 'block';
     setTimeout(() => modal.classList.add('show'), 10);
 };
 
 const closeModal = () => {
     modal.classList.remove('show');
-    aboutModal.classList.remove('show'); // Close the about modal as well
+    aboutModal.classList.remove('show');
     setTimeout(() => {
         modal.style.display = 'none';
-        aboutModal.style.display = 'none'; // Hide the about modal
+        aboutModal.style.display = 'none';
     }, 300);
 };
 
