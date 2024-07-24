@@ -48,29 +48,38 @@ const saveImages = () => {
 };
 
 loginButton.addEventListener('click', async () => {
-    try {
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ password: passwordInput.value }),
-        });
+  try {
+      const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ password: passwordInput.value }),
+      });
 
-        const data = await response.json();
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        if (data.success) {
-            localStorage.setItem('adminToken', passwordInput.value);
-            loginForm.style.display = 'none';
-            adminControls.style.display = 'block';
-            updatePhotoList();
-        } else {
-            showMessage('Incorrect password. Please try again.', true);
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showMessage('An error occurred during login. Please try again.', true);
-    }
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Oops, we haven't got JSON!");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+          localStorage.setItem('adminToken', passwordInput.value);
+          loginForm.style.display = 'none';
+          adminControls.style.display = 'block';
+          updatePhotoList();
+      } else {
+          showMessage('Incorrect password. Please try again.', true);
+      }
+  } catch (error) {
+      console.error('Login error:', error);
+      showMessage(`An error occurred during login: ${error.message}. Please try again.`, true);
+  }
 });
 
 addPhotoButton.addEventListener('click', async () => {
