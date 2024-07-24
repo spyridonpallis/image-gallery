@@ -5,7 +5,11 @@ const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: ['https://image-gallery-p4o53sqqq-spyridons-projects.vercel.app', 'https://image-gallery-nn0b8zkp4-spyridons-projects.vercel.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // AWS S3 configuration
 AWS.config.update({
