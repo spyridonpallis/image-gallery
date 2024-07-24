@@ -1,4 +1,4 @@
-const apiUrl = 'https://image-gallery-4s5xrgxdi-spyridons-projects.vercel.app/api'; // Replace with your actual Vercel deployment URL
+const apiUrl = 'https://image-gallery-4s5xrgxdi-spyridons-projects.vercel.app/api'; // Your Vercel deployment URL
 
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');
@@ -47,7 +47,8 @@ const saveImages = () => {
     localStorage.setItem('images', JSON.stringify(images));
 };
 
-loginButton.addEventListener('click', async () => {
+loginButton.addEventListener('click', async (e) => {
+    e.preventDefault();
     try {
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -55,24 +56,20 @@ loginButton.addEventListener('click', async () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ password: passwordInput.value }),
+            credentials: 'include' // This is important for cookies
         });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-            throw new Error("Oops, we haven't got JSON!");
-        }
-
         const data = await response.json();
 
         if (data.success) {
-            localStorage.setItem('adminToken', passwordInput.value);
             loginForm.style.display = 'none';
             adminControls.style.display = 'block';
             updatePhotoList();
+            showMessage('Login successful!');
         } else {
             showMessage('Incorrect password. Please try again.', true);
         }
@@ -91,10 +88,8 @@ addPhotoButton.addEventListener('click', async () => {
         try {
             const response = await fetch(`${apiUrl}/upload`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                },
-                body: formData
+                body: formData,
+                credentials: 'include' // Include cookies in the request
             });
 
             if (!response.ok) {
@@ -150,5 +145,25 @@ const resetForm = () => {
     document.getElementById('new-photo-location').value = '';
     document.getElementById('new-photo-description').value = '';
 };
+
+// Check if user is already logged in
+const checkLoginStatus = async () => {
+    try {
+        const response = await fetch(`${apiUrl}/checkAuth`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        if (response.ok) {
+            loginForm.style.display = 'none';
+            adminControls.style.display = 'block';
+            updatePhotoList();
+        }
+    } catch (error) {
+        console.error('Error checking login status:', error);
+    }
+};
+
+// Call this when the page loads
+checkLoginStatus();
 
 updatePhotoList();
