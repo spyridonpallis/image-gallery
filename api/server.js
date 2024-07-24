@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
@@ -102,12 +102,33 @@ app.post('/api/upload', isAuthenticated, upload.single('image'), async (req, res
       ContentType: file.mimetype,
     };
 
+    console.log('Upload Params:', uploadParams); // Debug statement to log upload parameters
+
     await s3Client.send(new PutObjectCommand(uploadParams));
     const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
     res.status(200).json({ imageUrl });
   } catch (error) {
     console.error('Error uploading to S3:', error);
     res.status(500).json({ error: 'Error uploading image' });
+  }
+});
+
+// List images route
+app.get('/api/images', async (req, res) => {
+  try {
+    const listObjectsCommand = {
+      Bucket: process.env.S3_BUCKET_NAME
+    };
+
+    const data = await s3Client.send(new ListObjectsV2Command(listObjectsCommand));
+    const images = data.Contents.map(item => {
+      return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${item.Key}`;
+    });
+
+    res.status(200).json({ images });
+  } catch (error) {
+    console.error('Error listing images:', error);
+    res.status(500).json({ error: 'Error listing images' });
   }
 });
 
