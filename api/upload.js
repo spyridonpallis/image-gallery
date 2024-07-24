@@ -1,84 +1,81 @@
+// api/upload.js
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import multer from 'multer';
 import { promisify } from 'util';
+import { isAuthenticated } from './login';
 
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-  }
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
 });
 
 const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // limit file size to 5MB
-  },
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024, // limit file size to 5MB
+    },
 });
 
 const runMiddleware = (req, res, fn) => {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      return resolve(result);
+    return new Promise((resolve, reject) => {
+        fn(req, res, (result) => {
+            if (result instanceof Error) {
+                return reject(result);
+            }
+            return resolve(result);
+        });
     });
-  });
-};
-
-const authenticate = (req) => {
-  const authHeader = req.headers.authorization;
-  return authHeader && authHeader === `Bearer ${process.env.ADMIN_PASSWORD}`;
 };
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method === 'POST') {
-    if (!authenticate(req)) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
 
-    try {
-      await runMiddleware(req, res, upload.single('image'));
+    if (req.method === 'POST') {
+        if (!isAuthenticated(req)) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
 
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
+        try {
+            await runMiddleware(req, res, upload.single('image'));
 
-      const file = req.file;
-      const fileName = `${Date.now()}-${file.originalname}`;
+            if (!req.file) {
+                return res.status(400).json({ error: 'No file uploaded' });
+            }
 
-      const uploadParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: fileName,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      };
+            const file = req.file;
+            const fileName = `${Date.now()}-${file.originalname}`;
 
-      await s3Client.send(new PutObjectCommand(uploadParams));
-      const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-      res.status(200).json({ imageUrl });
-    } catch (error) {
-      console.error('Error uploading to S3:', error);
-      res.status(500).json({ error: 'Error uploading image' });
+            const uploadParams = {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            };
+
+            await s3Client.send(new PutObjectCommand(uploadParams));
+            const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+            res.status(200).json({ imageUrl });
+        } catch (error) {
+            console.error('Error uploading to S3:', error);
+            res.status(500).json({ error: 'Error uploading image' });
+        }
+    } else {
+        res.setHeader('Allow', ['POST']);
+        res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-  } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
 }
 
 export const config = {
-  api: {
-    bodyParser: false,
-  },
+    api: {
+        bodyParser: false,
+    },
 };

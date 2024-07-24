@@ -1,5 +1,5 @@
+// public/js/admin.js
 const apiUrl = 'https://image-gallery-nu-opal.vercel.app';
-
 
 const loginForm = document.getElementById('login-form');
 const adminControls = document.getElementById('admin-controls');
@@ -51,13 +51,13 @@ const saveImages = () => {
 loginButton.addEventListener('click', async (e) => {
     e.preventDefault();
     try {
-        const response = await fetch(`${apiUrl}/login`, {
+        const response = await fetch(`${apiUrl}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ password: passwordInput.value }),
-            credentials: 'include' // This is important for cookies
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -87,10 +87,10 @@ addPhotoButton.addEventListener('click', async () => {
         formData.append('image', file);
 
         try {
-            const response = await fetch(`${apiUrl}/upload`, {
+            const response = await fetch(`${apiUrl}/api/upload`, {
                 method: 'POST',
                 body: formData,
-                credentials: 'include' // Include cookies in the request
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -147,10 +147,9 @@ const resetForm = () => {
     document.getElementById('new-photo-description').value = '';
 };
 
-// Check if user is already logged in
 const checkLoginStatus = async () => {
     try {
-        const response = await fetch(`${apiUrl}/checkAuth`, {
+        const response = await fetch(`${apiUrl}/api/checkAuth`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -164,7 +163,5 @@ const checkLoginStatus = async () => {
     }
 };
 
-// Call this when the page loads
 checkLoginStatus();
-
 updatePhotoList();
