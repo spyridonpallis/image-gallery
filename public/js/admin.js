@@ -28,12 +28,13 @@ const updatePhotoList = () => {
 
   new Sortable(photoList, {
     animation: 150,
-    onEnd: () => {
+    onEnd: async () => {
       const newOrder = Array.from(photoList.children).map(li => {
         const index = li.querySelector('.remove-photo').dataset.index;
         return images[index];
       });
       images = newOrder;
+      await saveImageOrder();
       saveImages();
     }
   });
@@ -49,6 +50,30 @@ const showMessage = (message, isError = false) => {
 
 const saveImages = () => {
   localStorage.setItem('images', JSON.stringify(images));
+};
+
+const saveImageOrder = async () => {
+  const order = images.map(img => img.key);
+  try {
+    const response = await fetch(`${apiUrl}/reorder`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ images: order }),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Save order response:', data);
+  } catch (error) {
+    console.error('Error saving order:', error);
+    showMessage(`Error saving order: ${error.message}`, true);
+  }
 };
 
 const resetForm = () => {
@@ -116,6 +141,7 @@ addPhotoButton.addEventListener('click', async () => {
       };
 
       images.unshift(newImage);
+      await saveImageOrder();
       saveImages();
       updatePhotoList();
       showMessage('Photo added successfully!');
@@ -151,6 +177,7 @@ photoList.addEventListener('click', async (e) => {
         }
 
         images.splice(index, 1);
+        await saveImageOrder();
         saveImages();
         updatePhotoList();
         showMessage('Photo removed successfully!');

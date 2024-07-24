@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, HeadObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
+const stream = require('stream');
+const { promisify } = require('util');
+const pipeline = promisify(stream.pipeline);
 
 const app = express();
 
@@ -47,12 +50,9 @@ const upload = multer({
 // Middleware to check authentication
 const isAuthenticated = (req, res, next) => {
   const token = req.cookies.adminToken;
-  console.log('Request Cookies:', req.cookies); // Debug statement to log all cookies
-  console.log('Admin Token:', token); // Debug statement
   if (token === process.env.ADMIN_PASSWORD) {
     next();
   } else {
-    console.log('Unauthorized access'); // Debug statement
     res.status(401).json({ error: 'Unauthorized' });
   }
 };
@@ -77,10 +77,8 @@ app.post('/api/login', (req, res) => {
       sameSite: 'Strict',
       maxAge: 3600000 // 1 hour
     });
-    console.log('Login successful, cookie set:', process.env.ADMIN_PASSWORD); // Debug statement
     return res.status(200).json({ success: true, message: 'Login successful' });
   } else {
-    console.log('Incorrect password'); // Debug statement
     return res.status(401).json({ success: false, error: 'Incorrect password' });
   }
 });
@@ -102,18 +100,38 @@ app.post('/api/upload', isAuthenticated, upload.single('image'), async (req, res
       ContentType: file.mimetype,
     };
 
-    console.log('Upload Params:', uploadParams); // Debug statement to log upload parameters
-
     await s3Client.send(new PutObjectCommand(uploadParams));
     const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
     res.status(200).json({ imageUrl });
   } catch (error) {
-    console.error('Error uploading to S3:', error);
     res.status(500).json({ error: 'Error uploading image' });
   }
 });
 
-// List images route
+// Save reordered images route
+app.post('/api/reorder', isAuthenticated, async (req, res) => {
+  const { images } = req.body;
+
+  if (!images) {
+    return res.status(400).json({ error: 'Images are required' });
+  }
+
+  try {
+    const uploadParams = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: 'imageOrder.json',
+      Body: JSON.stringify(images),
+      ContentType: 'application/json',
+    };
+
+    await s3Client.send(new PutObjectCommand(uploadParams));
+    res.status(200).json({ message: 'Order saved successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving order' });
+  }
+});
+
+// List images route (updated to fetch the order from the file)
 app.get('/api/images', async (req, res) => {
   try {
     const listObjectsCommand = {
@@ -126,16 +144,32 @@ app.get('/api/images', async (req, res) => {
         await s3Client.send(new HeadObjectCommand({ Bucket: process.env.S3_BUCKET_NAME, Key: item.Key }));
         return { url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${item.Key}`, key: item.Key };
       } catch (error) {
-        console.error('Error fetching head object:', error);
         return null;
       }
     });
 
     const images = (await Promise.all(imagePromises)).filter(image => image !== null);
 
-    res.status(200).json({ images });
+    // Read the order from the file in S3
+    let orderedImages = images;
+    try {
+      const getObjectCommand = new GetObjectCommand({ Bucket: process.env.S3_BUCKET_NAME, Key: 'imageOrder.json' });
+      const data = await s3Client.send(getObjectCommand);
+      const streamToString = async (stream) => {
+        const chunks = [];
+        for await (let chunk of stream) {
+          chunks.push(chunk);
+        }
+        return Buffer.concat(chunks).toString('utf-8');
+      };
+      const order = JSON.parse(await streamToString(data.Body));
+      orderedImages = order.map(key => images.find(img => img.key === key)).filter(img => img !== undefined);
+    } catch (err) {
+      console.error('Error reading order file:', err);
+    }
+
+    res.status(200).json({ images: orderedImages });
   } catch (error) {
-    console.error('Error listing images:', error);
     res.status(500).json({ error: 'Error listing images' });
   }
 });
@@ -157,14 +191,12 @@ app.delete('/api/images', isAuthenticated, async (req, res) => {
     await s3Client.send(new DeleteObjectCommand(deleteParams));
     res.status(200).json({ message: 'Image deleted successfully' });
   } catch (error) {
-    console.error('Error deleting image:', error);
     res.status(500).json({ error: 'Error deleting image' });
   }
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Global error handler:', err);
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
