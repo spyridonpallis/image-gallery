@@ -1,4 +1,4 @@
-const apiUrl = process.env.API_URL || 'https://image-gallery-nn0b8zkp4-spyridons-projects.vercel.app';
+const apiUrl = '/api';
 const adminPassword = process.env.ADMIN_PASSWORD || 'your_secure_password_here'; // Change this to a secure password
 
 const loginForm = document.getElementById('login-form');
