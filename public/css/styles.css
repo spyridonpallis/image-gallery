@@ -368,12 +368,6 @@ footer {
     border-width: 0;
 }
 
-/* Focus styles for keyboard navigation */
-a:focus, button:focus, input:focus, textarea:focus, select:focus {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 2px;
-}
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 10px;
