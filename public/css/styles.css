@@ -229,13 +229,6 @@ footer {
     bottom: 0;
 }
 
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-}
-
 .admin-button {
     background-color: var(--accent-color);
     color: var(--background-color);
