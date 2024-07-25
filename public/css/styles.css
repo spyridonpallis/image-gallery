@@ -331,10 +331,6 @@ footer {
     text-decoration: underline;
 }
 
-#admin-controls > button {
-    margin-bottom: 1rem;
-}
-
 @media (max-width: 768px) {
     header {
         flex-direction: column;
@@ -370,12 +366,6 @@ footer {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border-width: 0;
-}
-
-/* Focus styles for keyboard navigation */
-a:focus, button:focus, input:focus, textarea:focus, select:focus {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 2px;
 }
 
 /* Custom scrollbar */
