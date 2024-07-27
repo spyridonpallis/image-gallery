@@ -135,6 +135,12 @@ main {
     opacity: 1;
 }
 
+@media (max-width: 768px) {
+    .fullscreen-btn {
+        display: none;
+    }
+}
+
 .modal {
     display: none;
     position: fixed;
